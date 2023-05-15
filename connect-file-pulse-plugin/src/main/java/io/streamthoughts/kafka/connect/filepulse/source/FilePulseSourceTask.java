@@ -26,12 +26,6 @@ import io.streamthoughts.kafka.connect.filepulse.filter.RecordFilterPipeline;
 import io.streamthoughts.kafka.connect.filepulse.fs.TaskFileURIProvider;
 import io.streamthoughts.kafka.connect.filepulse.reader.RecordsIterable;
 import io.streamthoughts.kafka.connect.filepulse.state.StateBackingStoreAccess;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.source.SourceRecord;
-import org.apache.kafka.connect.source.SourceTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +38,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.source.SourceRecord;
+import org.apache.kafka.connect.source.SourceTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The FilePulseSourceTask.
@@ -245,11 +244,14 @@ public class FilePulseSourceTask extends SourceTask {
                 if (!isTaskRunning()) continue;
                 return results;
             }
-        } catch (final Throwable t) {
-            // This task has failed, so close any resources (maybe reopened if needed) before throwing
+        } catch (final Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            // This task has failed, so close any resources before throwing
             LOG.error("This task has failed due to uncaught error and will be stopped.");
             closeResources();
-            throw t;
+            throw e;
         }
         // Only in case of shutdown
         closeResources();

@@ -18,9 +18,6 @@
  */
 package io.streamthoughts.kafka.connect.filepulse.data;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StructSchema implements Schema, Iterable<TypedField> {
 
@@ -107,7 +105,18 @@ public class StructSchema implements Schema, Iterable<TypedField> {
     }
 
     public List<TypedField> fields() {
-        return new ArrayList<>(fields.values());
+        ArrayList<TypedField> ordered = new ArrayList<>(fields.values());
+        ordered.sort(Comparator.comparing(TypedField::name));
+        return ordered;
+    }
+
+    public List<TypedField> fieldsByIndex() {
+        ArrayList<TypedField> ordered = new ArrayList<>(fields.values());
+        // order elements in array to match field column index
+        for (TypedField field: fields.values()) {
+            ordered.add(field.index(),field);
+        }
+        return ordered;
     }
 
     void set(final String fieldName, final Schema fieldSchema) {
@@ -151,11 +160,7 @@ public class StructSchema implements Schema, Iterable<TypedField> {
      */
     @Override
     public Iterator<TypedField> iterator() {
-        return this.fields.values()
-            .stream()
-            .sorted(Comparator.comparing(TypedField::name))
-            .collect(Collectors.toUnmodifiableList())
-            .iterator();
+        return fields().iterator();
     }
 
     /**

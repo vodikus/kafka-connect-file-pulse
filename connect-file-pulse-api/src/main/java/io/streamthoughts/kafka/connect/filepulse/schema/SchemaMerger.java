@@ -19,17 +19,16 @@
 package io.streamthoughts.kafka.connect.filepulse.schema;
 
 import io.streamthoughts.kafka.connect.filepulse.data.DataException;
-import org.apache.kafka.connect.data.Field;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.Schema.Type;
-import org.apache.kafka.connect.data.SchemaBuilder;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import org.apache.kafka.connect.data.Field;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.Schema.Type;
+import org.apache.kafka.connect.data.SchemaBuilder;
 
 /**
  * Utility class to merge Connect {@link Schema}.
@@ -135,8 +134,10 @@ public class SchemaMerger implements BiFunction<Schema, Schema, Schema> {
                                       final Schema right,
                                       final SchemaContext context) {
 
-        if (!Objects.equals(left.name(), right.name()))
-            throw new DataException("Cannot merge two schemas wih different name " + left.name() + "<>" + right.name());
+        if (left.name() != null && right.name() != null) {
+            if (!Objects.equals(left.name(), right.name()))
+                throw new DataException("Cannot merge two schemas wih different name " + left.name() + "<>" + right.name());
+        }
 
         final SchemaBuilder merged = mergeMetadata(left, right, new SchemaBuilder(Type.STRUCT));
 
@@ -169,10 +170,11 @@ public class SchemaMerger implements BiFunction<Schema, Schema, Schema> {
         // Remaining fields only exist on LEFT schema.
         fieldSchemas.putAll(remaining);
 
-        // Fields should be added ordered by name to make schema merge operation as idempotent as possible.
+        // Fields should be added ordered by name to make
+        // schema merge operation as idempotent as possible.
         fieldSchemas.entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
-            .forEach(it -> merged.field(it.getKey(), context.buildSchemaWithCyclicSchemaWrapper(it.getValue())));
+            .forEachOrdered(it -> merged.field(it.getKey(), context.buildSchemaWithCyclicSchemaWrapper(it.getValue())));
 
         return context.buildSchemaWithCyclicSchemaWrapper(merged.build());
     }
@@ -181,8 +183,8 @@ public class SchemaMerger implements BiFunction<Schema, Schema, Schema> {
                                                final Schema right,
                                                final SchemaBuilder merged) {
 
-        merged.name(left.name());
-        merged.doc(left.doc());
+        merged.name(left.name() != null ? left.name() : right.name());
+        merged.doc(left.doc() != null ? left.doc() : right.doc());
 
         if (left.isOptional() || right.isOptional()) {
             merged.optional();

@@ -19,12 +19,6 @@
 package io.streamthoughts.kafka.connect.filepulse.fs;
 
 import io.streamthoughts.kafka.connect.filepulse.source.FileObjectMeta;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,8 +27,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class LocalFSDirectoryListingTest {
 
@@ -77,6 +77,26 @@ public class LocalFSDirectoryListingTest {
         Assert.assertEquals(expected, getCanonicalPath(scanned.iterator().next()));
     }
 
+    @Test
+    public void shouldExtractGzipCompressedFiles() throws IOException {
+        File archiveFile = new File(inputDirectory, DEFAULT_ARCHIVE_NAME + ".gz");
+
+        try (GZIPOutputStream os = new GZIPOutputStream(new FileOutputStream(archiveFile))) {
+            byte[] data = "dummy".getBytes();
+            os.write(data, 0, data.length);
+        }
+
+        scanner.configure(new HashMap<>() {{
+            put(LocalFSDirectoryListingConfig.FS_LISTING_DIRECTORY_PATH, inputDirectory.getAbsolutePath());
+        }});
+
+        final Collection<FileObjectMeta> scanned = scanner.listObjects();
+        Assert.assertEquals(1, scanned.size());
+        String expected = String.join(File.separator, Arrays.asList(inputDirectory.getCanonicalPath(),
+                DEFAULT_ARCHIVE_NAME, DEFAULT_ARCHIVE_NAME));
+        Assert.assertEquals(expected, getCanonicalPath(scanned.iterator().next()));
+    }
+    
     @Test
     public void shouldListFilesGivenRecursiveScanEnable() throws IOException {
         folder.newFolder(TEST_SCAN_DIRECTORY , "sub-directory");

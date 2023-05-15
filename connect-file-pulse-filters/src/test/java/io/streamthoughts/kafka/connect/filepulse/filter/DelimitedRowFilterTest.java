@@ -18,24 +18,23 @@
  */
 package io.streamthoughts.kafka.connect.filepulse.filter;
 
+import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_AUTO_GENERATE_COLUMN_NAME_CONFIG;
+import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_EXTRACT_COLUMN_NAME_CONFIG;
+import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_FIELD_COLUMNS_CONFIG;
+import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_FIELD_DUPLICATE_COLUMNS_AS_ARRAY_CONFIG;
+
 import io.streamthoughts.kafka.connect.filepulse.data.DataException;
 import io.streamthoughts.kafka.connect.filepulse.data.Type;
 import io.streamthoughts.kafka.connect.filepulse.data.TypedStruct;
 import io.streamthoughts.kafka.connect.filepulse.data.TypedValue;
 import io.streamthoughts.kafka.connect.filepulse.reader.RecordsIterable;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_AUTO_GENERATE_COLUMN_NAME_CONFIG;
-import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_EXTRACT_COLUMN_NAME_CONFIG;
-import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_FIELD_COLUMNS_CONFIG;
-import static io.streamthoughts.kafka.connect.filepulse.config.DelimitedRowFilterConfig.READER_FIELD_DUPLICATE_COLUMNS_AS_ARRAY_CONFIG;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class DelimitedRowFilterTest {
@@ -157,6 +156,23 @@ public class DelimitedRowFilterTest {
         Assert.assertEquals("value1", record.getString("c1"));
         Assert.assertEquals(2, record.getInt("c2").intValue());
         Assert.assertTrue(record.getBoolean("c3"));
+    }
+
+    @Test
+    public void should_use_configured_schema_when_field_names_out_of_order() {
+        configs.put(READER_FIELD_COLUMNS_CONFIG, "x1:STRING;c2:INTEGER;y3:BOOLEAN");
+        filter.configure(configs, alias -> null);
+        RecordsIterable<TypedStruct> output = filter.apply(null, DEFAULT_STRUCT, false);
+        Assert.assertNotNull(output);
+        Assert.assertEquals(1, output.size());
+
+        final TypedStruct record = output.iterator().next();
+        Assert.assertEquals(Type.STRING, record.get("x1").type());
+        Assert.assertEquals(Type.INTEGER, record.get("c2").type());
+        Assert.assertEquals(Type.BOOLEAN, record.get("y3").type());
+        Assert.assertEquals("value1", record.getString("x1"));
+        Assert.assertEquals(2, record.getInt("c2").intValue());
+        Assert.assertTrue(record.getBoolean("y3"));
     }
 
     @Test

@@ -25,15 +25,15 @@ import io.streamthoughts.kafka.connect.filepulse.reader.FileInputIterator;
 import io.streamthoughts.kafka.connect.filepulse.reader.ReaderException;
 import io.streamthoughts.kafka.connect.filepulse.reader.RecordsIterable;
 import io.streamthoughts.kafka.connect.filepulse.source.FileRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RowFileWithFooterInputIterator extends RowFileInputIteratorDecorator {
 
@@ -61,12 +61,12 @@ public class RowFileWithFooterInputIterator extends RowFileInputIteratorDecorato
     private List<String> footersStrings;
 
     public RowFileWithFooterInputIterator(final int skipFooters,
-                                          final File file,
+                                          final URI uri,
                                           final Charset charset,
                                           final FileInputIterator<FileRecord<TypedStruct>> iterator) {
         super(iterator);
         this.skipFooters = skipFooters;
-        this.file = file;
+        this.file = new File(uri);
         this.charset = charset;
     }
 

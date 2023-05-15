@@ -16,14 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.streamthoughts.kafka.connect.filepulse.fs.reader;
+package io.streamthoughts.kafka.connect.filepulse.fs;
 
-import io.streamthoughts.kafka.connect.filepulse.fs.Storage;
+import static io.streamthoughts.kafka.connect.filepulse.internal.IOUtils.createParentIfNotExists;
+
 import io.streamthoughts.kafka.connect.filepulse.source.FileObjectMeta;
 import io.streamthoughts.kafka.connect.filepulse.source.LocalFileObjectMeta;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,8 +34,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
-
-import static io.streamthoughts.kafka.connect.filepulse.internal.IOUtils.createParentIfNotExists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link Storage} implementation for manging files on local file-system.
@@ -85,15 +83,15 @@ public class LocalFileStorage implements Storage {
         final Path sourcePath = Paths.get(source);
         final Path destPath = Paths.get(dest);
         try {
-            LOG.info("Moving file {} to {}", source, dest);
+            LOG.info("Moving file '{}' to '{}'.", source, dest);
             createParentIfNotExists(destPath);
             Files.move(sourcePath, destPath, StandardCopyOption.ATOMIC_MOVE);
-            LOG.info("File {} moved successfully", source);
+            LOG.info("File '{}' moved successfully", source);
         } catch (IOException outer) {
             try {
                 Files.move(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
                 LOG.debug(
-                        "Non-atomic move of {} to {} succeeded after atomic move failed due to {}",
+                        "Non-atomic move of '{}' to '{}' succeeded after atomic move failed due to '{}'",
                         source,
                         destPath,
                         outer.getMessage()
@@ -102,14 +100,14 @@ public class LocalFileStorage implements Storage {
                 inner.addSuppressed(outer);
                 try {
                     doSimpleMove(sourcePath, destPath);
-                    LOG.debug("Simple move as copy+delete of {} to {} succeeded after move failed due to {}",
+                    LOG.debug("Simple move as copy+delete of '{}' to '{}' succeeded after move failed due to '{}'",
                             source,
                             dest,
                             inner.getMessage()
                     );
                 } catch (IOException e) {
                     e.addSuppressed(inner);
-                    LOG.error("Error while moving file {}", source, inner);
+                    LOG.error("Error while moving file '{}'", source, inner);
                     return false;
                 }
             }

@@ -21,13 +21,8 @@ package io.streamthoughts.kafka.connect.filepulse.fs;
 import io.streamthoughts.kafka.connect.filepulse.errors.ConnectFilePulseException;
 import io.streamthoughts.kafka.connect.filepulse.fs.codec.CodecHandler;
 import io.streamthoughts.kafka.connect.filepulse.fs.codec.CodecManager;
-import io.streamthoughts.kafka.connect.filepulse.fs.reader.LocalFileStorage;
 import io.streamthoughts.kafka.connect.filepulse.source.FileObjectMeta;
 import io.streamthoughts.kafka.connect.filepulse.source.LocalFileObjectMeta;
-import org.apache.kafka.connect.errors.ConnectException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -41,6 +36,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.kafka.connect.errors.ConnectException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@code LocalFSDirectoryListing} can be used for listing files that exist in a local input directory.

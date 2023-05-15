@@ -24,7 +24,7 @@
     <parent>
         <artifactId>kafka-connect-filepulse-reactor</artifactId>
         <groupId>io.streamthoughts</groupId>
-        <version>2.9.0-SNAPSHOT</version>
+        <version>2.13.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -49,7 +49,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <checkstyle.config.location>${project.parent.basedir}</checkstyle.config.location>
-        <antlr4.version>4.11.1</antlr4.version>
+        <license.header.file>${project.parent.basedir}/license-header</license.header.file>
+        <antlr4.version>4.12.0</antlr4.version>
     </properties>
 
     <build>

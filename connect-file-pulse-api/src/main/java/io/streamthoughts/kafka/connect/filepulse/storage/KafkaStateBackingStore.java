@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.errors.RetriableException;
@@ -61,16 +60,18 @@ public class KafkaStateBackingStore<T> implements StateBackingStore<T> {
      * @param topic     the topic back store.
      * @param keyPrefix the key-prefix.
      * @param groupId   the group attached to the backing topic (i.e., the connector-name).
-     * @param configs   the kafka configuration.
-     * @param serde     the state serdes.
+     * @param producerProps   the kafka producer properties.
+     * @param consumerProps   the kafka consumer properties.
+     * @param serde     the {@link StateSerde}.
      */
     public KafkaStateBackingStore(final String topic,
                                   final String keyPrefix,
                                   final String groupId,
-                                  final Map<String, ?> configs,
+                                  final Map<String, ?> producerProps,
+                                  final Map<String, ?> consumerProps,
                                   final StateSerde<T> serde,
                                   final boolean consumerEnabled) {
-        KafkaBasedLogFactory factory = new KafkaBasedLogFactory(configs);
+        KafkaBasedLogFactory factory = new KafkaBasedLogFactory(producerProps, consumerProps);
         this.kafkaLog = factory.make(topic, new ConsumeCallback());
         this.groupId = sanitizeGroupId(groupId);
         this.serde = serde;
@@ -81,6 +82,7 @@ public class KafkaStateBackingStore<T> implements StateBackingStore<T> {
     private static String sanitizeGroupId(final String groupId) {
         return groupId.replaceAll("\\.", "-");
     }
+
     Status getState() {
         return this.status;
     }

@@ -31,14 +31,6 @@ import io.streamthoughts.kafka.connect.filepulse.data.TypedField;
 import io.streamthoughts.kafka.connect.filepulse.data.TypedStruct;
 import io.streamthoughts.kafka.connect.filepulse.data.TypedValue;
 import io.streamthoughts.kafka.connect.filepulse.schema.SchemaContext;
-import org.apache.kafka.connect.data.Field;
-import org.apache.kafka.connect.data.Schema;
-import org.apache.kafka.connect.data.SchemaAndValue;
-import org.apache.kafka.connect.data.SchemaBuilder;
-import org.apache.kafka.connect.data.Struct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,6 +38,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.kafka.connect.data.Field;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.data.SchemaAndValue;
+import org.apache.kafka.connect.data.SchemaBuilder;
+import org.apache.kafka.connect.data.Struct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnectSchemaMapper implements SchemaMapper<Schema>, SchemaMapperWithValue<SchemaAndValue> {
 
@@ -217,8 +216,8 @@ public class ConnectSchemaMapper implements SchemaMapper<Schema>, SchemaMapperWi
 
     private static Struct toConnectStruct(final Schema connectSchema, final TypedStruct struct) {
         final Struct connectStruct = new Struct(connectSchema);
-        for (Field connectField : connectSchema.fields()) {
 
+        for (Field connectField : connectSchema.fields()) {
             final String recordName = connectSchema.name();
             final String fieldName = connectField.name();
 
@@ -297,8 +296,15 @@ public class ConnectSchemaMapper implements SchemaMapper<Schema>, SchemaMapperWi
             return typed.getMap().entrySet()
                     .stream()
                     .collect(Collectors.toMap(
-                                    e -> toConnectObject(connectKeySchema, TypedValue.of(e.getKey(), keySchema)),
-                                    e -> toConnectObject(connectValueSchema, TypedValue.of(e.getValue(), valueSchema))
+                                    e -> {
+                                        TypedValue value = TypedValue.of(e.getKey(), keySchema);
+                                        return toConnectObject(connectKeySchema, value);
+                                    },
+                                    e -> {
+                                        Object converted = valueSchema.type().convert(e.getValue());
+                                        TypedValue elemValue = TypedValue.of(converted, valueSchema);
+                                        return toConnectObject(connectValueSchema, elemValue);
+                                    }
                             )
                     );
         }
@@ -311,7 +317,11 @@ public class ConnectSchemaMapper implements SchemaMapper<Schema>, SchemaMapperWi
 
             return typed.getArray()
                     .stream()
-                    .map(e -> toConnectObject(connectValueSchema, TypedValue.of(e, valueSchema)))
+                    .map(value -> {
+                        Object converted = valueSchema.type().convert(value);
+                        TypedValue elemValue = TypedValue.of(converted, valueSchema);
+                        return toConnectObject(connectValueSchema, elemValue);
+                    })
                     .collect(Collectors.toList());
         }
         return typed.value();

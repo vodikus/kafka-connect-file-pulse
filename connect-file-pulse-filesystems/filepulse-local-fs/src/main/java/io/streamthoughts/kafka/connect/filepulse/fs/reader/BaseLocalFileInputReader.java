@@ -18,6 +18,7 @@
  */
 package io.streamthoughts.kafka.connect.filepulse.fs.reader;
 
+import io.streamthoughts.kafka.connect.filepulse.fs.LocalFileStorage;
 import io.streamthoughts.kafka.connect.filepulse.reader.StorageAwareFileInputReader;
 
 public abstract class BaseLocalFileInputReader

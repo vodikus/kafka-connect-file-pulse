@@ -18,13 +18,12 @@
  */
 package io.streamthoughts.kafka.connect.filepulse.fs;
 
+import static io.streamthoughts.kafka.connect.filepulse.internal.StringUtils.substringAfterLast;
+
 import com.amazonaws.services.s3.AmazonS3URI;
 import io.streamthoughts.kafka.connect.filepulse.internal.StringUtils;
-
 import java.net.URI;
 import java.util.Objects;
-
-import static io.streamthoughts.kafka.connect.filepulse.internal.StringUtils.substringAfterLast;
 
 /**
  * This class represents an object stored in Amazon S3. This object contains
@@ -88,7 +87,8 @@ public class S3BucketKey {
      * @return the {@link URI} for this Amazon S3 object.
      */
     public URI toURI() {
-        return URI.create("s3://" + bucketName + S3_FOLDER_SEPARATOR + key);
+        AmazonS3URI s3Uri = new AmazonS3URI("s3://" + bucketName + S3_FOLDER_SEPARATOR + key, true);
+        return s3Uri.getURI();
     }
 
     /**

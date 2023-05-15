@@ -19,9 +19,8 @@
 package io.streamthoughts.kafka.connect.filepulse.fs;
 
 import io.streamthoughts.kafka.connect.filepulse.source.FileObjectMeta;
-import org.apache.kafka.connect.connector.ConnectorContext;
-
 import java.util.List;
+import org.apache.kafka.connect.connector.ConnectorContext;
 
 /**
  * A {@code FileSystemMonitor} is responsible for monitoring a specific file-system
@@ -38,7 +37,7 @@ public interface FileSystemMonitor {
     void invoke(final ConnectorContext context);
 
     /**
-     * Enables or disables the the file-listing process either temporarily or permanently.
+     * Enables or disables the file-listing process either temporarily or permanently.
      * In other words, if disabled then {@link #listFilesToSchedule()} will always return an empty list.
      *
      * @param enabled is the file-listing process enabled.

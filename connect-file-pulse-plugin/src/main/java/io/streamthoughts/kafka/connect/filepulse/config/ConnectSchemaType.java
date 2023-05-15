@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 StreamThoughts.
+ * Copyright 2023 StreamThoughts.
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -16,3 +16,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.streamthoughts.kafka.connect.filepulse.config;
+
+import java.util.Arrays;
+import java.util.Locale;
+
+public enum ConnectSchemaType {
+    INVALID,
+    CONNECT,
+    AVRO;
+
+    public static ConnectSchemaType getForNameIgnoreCase(final String str) {
+        return Arrays.stream(ConnectSchemaType.values())
+                .filter(e -> e.name().equals(str.toUpperCase(Locale.ROOT)))
+                .findFirst()
+                .orElse(ConnectSchemaType.INVALID);
+    }
+}
